@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './styles.css';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  // <StrictMode>
     <CalendarApp />
-  </StrictMode>,
+  // </StrictMode>,
 )

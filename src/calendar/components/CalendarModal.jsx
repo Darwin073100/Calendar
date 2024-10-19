@@ -1,11 +1,13 @@
 import { addHours, differenceInMinutes } from 'date-fns';
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import DatePicker,{ registerLocale } from 'react-datepicker';
+import { useUiStore } from '../../hooks/useUiStore';
 import ReactModal from 'react-modal';
 import es from 'date-fns/locale/es';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useCalendarStore } from '../../hooks/useCalendarStore';
 
 registerLocale('es', es);
 const customStyles = {
@@ -23,17 +25,19 @@ const customStyles = {
 
 
 export const CalendarModal = () => {
-  const [isOpen, setIsOpen] = useState(true)
+  const { activeEvent, startSavingEvent } = useCalendarStore();
   const [startDate, setStartDate] = useState(new Date());
   const [formSubmitted, setFormSubmitted] = useState( false );
   const [formValues, setFormValues] = useState({
-    title: 'Edwin',
-    notes: 'Garcia',
+    title: '',
+    notes: '',
     start: new Date(),
     end: addHours( new Date(), 2),
   });
+
+  const { isDateModalOpen, closeDateModal } = useUiStore();
   const onCloseModal = ()=>{
-      setIsOpen( false );
+      closeDateModal();
   }
   const onInputChanged = ({ target })=>{
     setFormValues({
@@ -42,7 +46,7 @@ export const CalendarModal = () => {
     });
   }
 
-    const onSubmit = (event)=>{
+    const onSubmit = async (event)=>{
       event.preventDefault();
       setFormSubmitted( true );
       const difference = differenceInMinutes(formValues.end, formValues.start);
@@ -56,7 +60,9 @@ export const CalendarModal = () => {
       if( formValues.title.length <= 0 ) return;
 
       console.log(formValues);
-
+      await startSavingEvent( formValues );
+      closeDateModal();
+      setFormSubmitted(false);
     }
 
     const onDateChanged = ( event, changing )=>{
@@ -75,9 +81,16 @@ export const CalendarModal = () => {
 
     }, [formValues.title, formSubmitted ]);
 
+    useEffect(() => {
+      if( activeEvent !== null  ){
+        setFormValues({ ...activeEvent });
+      }
+    }, [ activeEvent ])
+    
+
   return (
     <ReactModal
-        isOpen={ isOpen }
+        isOpen={ isDateModalOpen }
         onRequestClose={ onCloseModal }
         style={ customStyles }
         className={'modal'}

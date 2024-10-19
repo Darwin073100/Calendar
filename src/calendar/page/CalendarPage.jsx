@@ -8,20 +8,18 @@ import { getMessagesES } from "../../helpers/getMessages";
 import { CalendarEvent } from "../components/CalendarEvent";
 import { useState } from "react";
 import { CalendarModal } from "../components/CalendarModal";
+import { useUiStore } from "../../hooks/useUiStore";
+import { useSelector } from "react-redux";
+import { useCalendarStore } from "../../hooks/useCalendarStore";
+import { FabAddNew } from "../components/FabAddNew";
+import { FabDelete } from "../components/FabDelete";
 
-const events = [{
-  title: 'Cumpleaños del jefe',
-  notes: 'Hay que comprar un pastel',
-  start: new Date(),
-  end: addHours( new Date(), 2),
-  gbColor: '#fafafa',
-  user:{
-    _id: '123',
-    name: 'Edwin'
-  }
-}]
 export const CalendarPage = () => {
+  const { events, setActiveEvent } = useCalendarStore();
+  const { openDateModal } = useUiStore();
+
   const [ lastView, setLastView] = useState(localStorage.getItem('lastView') || 'week');
+
   const eventStyleGetter = ( event, start, end, isSelected ) => {
     const style = {
       backgroundColor: '#347cf7',
@@ -29,18 +27,17 @@ export const CalendarPage = () => {
       opacity: 0.8,
       color: 'white'
     }
-
     return {
       style
     }
   }
 
   const onDoubleClick = ( event )=>{
-    console.log( event );
+    openDateModal();
   }
 
   const onSelect = ( event )=>{
-    console.log( event );
+    setActiveEvent( event );
   }
 
   const onViewChanged = ( event )=>{
@@ -71,6 +68,10 @@ export const CalendarPage = () => {
           onView={ onViewChanged }
     />
     <CalendarModal />
+
+    <FabAddNew />
+
+    <FabDelete />
     </>
   )
 }
